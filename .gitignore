@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.cache/
+report.json
+oldbkup/
+.env
+adk/
+file_tree.txt
+flatcode.txt
+file_tree.py
+/__pycache__/

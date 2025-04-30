@@ -1,0 +1,9 @@
+google-adk
+pyyaml>=6.0
+pytest>=7.0
+flake8>=5.0
+mypy>=0.900
+bandit>=1.7
+flake8
+mypy
+pathspec

@@ -1,0 +1,14 @@
+strict: true
+max_func_lines: 40
+max_nesting_depth: 4
+run_mypy: true
+run_bandit: true
+max_complexity: 8
+files:
+  - src/
+  - tests/
+checks:
+  - parameter_validation
+  - unused_variable
+  - nesting_depth
+output: json

@@ -1,0 +1,11 @@
+### `architecture.dot`
+```dot
+digraph G {
+  rankdir=LR;
+  "Codebase" -> "Static Scan";
+  "Static Scan" -> "Task Parser";
+  "Task Parser" -> "SQLite DB";
+  "SQLite DB" -> "CLI";
+  "CLI" -> "Roo Agents";
+  "Roo Agents" -> "MCP Servers";
+}

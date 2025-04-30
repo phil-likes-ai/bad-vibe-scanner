@@ -1,0 +1,17 @@
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python tests/test_code_quality_gate.py --files src/ --strict --use-ruff --format-check --run-audit --output markdown --output-file bs-test-results-full.md
+      - run: python parse_bs_tasks.py
+      - run: pytest tests/test_quality_pipeline.py -v
+      - run: pytest tests/test_manage_tasks.py -v
+```

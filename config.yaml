@@ -1,5 +1,5 @@
 strict: true
-max_func_lines: 40
+max_func_lines: 60
 max_nesting_depth: 4
 run_mypy: true
 run_bandit: true

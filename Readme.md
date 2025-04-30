@@ -1,6 +1,6 @@
 # BS Scan
 ## Find the 'Bad Vibes'
-Free code quality beast. Scans, tracks, and (soon) fixes your code’s BS. MIT-licensed: take it, tweak it, enjoy it, just don’t sue me, again! This test suite born out of a bit of fun aims to take away the pains when 'vibe coding' gives you er, bad vibes man.
+Free code quality tests. Scans, tracks, and (soon) fixes your code’s BS if any vibes have been added in error. MIT-licensed: take it, tweak it, break it, enjoy it, just don’t sue me, again, pls! This test suite born out of a day off aims to take away the pains when that there 'vibe coding' gives you er, bad vibes man.
 
 ## Quick Start
 1. `git clone https://github.com/YOURHANDLE/roocore`

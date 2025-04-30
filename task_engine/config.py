@@ -1,13 +1,11 @@
 """
-Central configuration for RooCore V2.
+Central config
 
-Edit the MCP_ENDPOINTS and API_TOKEN to match
-your actual MCP-server deployment.
+TODO: actual MCP-server deployment.
 """
 
 from __future__ import annotations
 
-API_TOKEN = "REPLACE_WITH_REAL_TOKEN"
 
 MCP_ENDPOINTS: dict[str, str] = {
     "sequential_thinking": "http://localhost:8001/plan",

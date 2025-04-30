@@ -15,9 +15,16 @@ Free code quality tests. Scans, tracks, and (soon) fixes your code’s BS if any
 - **Agent**: Loops fixes via MCP (mock it with `mock_mcp.py`).
 
 ## Hack It
-- MIT vibes—fork it, break it, make it yours.
-- Add rules, mock MCP, PRs welcome!
+- MIT —fork it, break it, make it yours.
+- Next steps: Populate skeleton, Add rules, implement parser, replace mock MCP, lots of good fun.
 
 ## Notes
-- MCP servers are stubs—run `mock_mcp.py` on port 8001.
+- MCP servers are stubs —run `mock_mcp.py` on port 8001.
+- Will be replaced shortly. 
+
+
+
+## Say hello
 - Built by Phil—likes-ai
+- X: @PhilLikesAi
+- Youtube: https://www.youtube.com/@phil-likes-ai

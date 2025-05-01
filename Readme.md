@@ -34,22 +34,30 @@ chmod +x run.sh
 ### Manage Tasks
 
 ```bash
-# List all tasks
-python -m task_engine.manage_tasks --list
+# Scan the code
+python -m task_engine.manage_tasks scan .
 
-# Get details for a task
-python -m task_engine.manage_tasks --details TASK_ID
+# Import tasks from a markdown file
+python -m task_engine.manage_tasks import_md task_list.md
+
+# Plan a task
+python -m task_engine.manage_tasks plan TASK_ID
 
 # Fix a specific task
-python -m task_engine.manage_tasks --fix TASK_ID
+python -m task_engine.manage_tasks fix TASK_ID
+
+# Verify a specific task
+python -m task_engine.manage_tasks verify TASK_ID
+
+# Complete a specific task
+python -m task_engine.manage_tasks complete TASK_ID
 
 # Process multiple tasks automatically
-python -m task_engine.manage_tasks --agent-loop --batch 5
+python -m task_engine.manage_tasks agent_loop --batch 5
 ```
 
 ## Quality Checks
 
-| Type | What It Checks |
 |------|----------------|
 | Code Structure | Function length, nesting depth, complexity |
 | Testing | Assertion density, test coverage |
@@ -58,23 +66,7 @@ python -m task_engine.manage_tasks --agent-loop --batch 5
 | Types | Type annotation issues via mypy |
 
 ## All Available Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--files` | Files or directories to analyze | `["."]` |
-| `--config` | Path to YAML config file | `None` |
-| `--strict` | Enable strict mode for all checks | `False` |
-| `--max-func-lines` | Maximum allowed lines per function | `50` |
-| `--max-nesting-depth` | Maximum nesting depth | `3` |
-| `--max-complexity` | Maximum cyclomatic complexity | `10` |
-| `--run-mypy` | Enable mypy type checking | `False` |
-| `--run-bandit` | Enable Bandit security checks | `False` |
-| `--run-audit` | Enable pip-audit for dependencies | `False` |
-| `--use-ruff` | Use Ruff instead of Flake8 | `False` |
-| `--format-check` | Run Black and isort checks | `False` |
-| `--checks` | Comma-separated list of checks to run | `"all"` |
-| `--output` | Output format (text, json, markdown) | `"text"` |
-| `--output-file` | File to write output | `None` |
+| Option | Description |
 
 ## Built-in Checks
 
@@ -145,3 +137,64 @@ x = eval("1 + 1")  # noqa
 ## License
 
 [MIT License](license.md)
+
+## Creating Custom Checks
+
+You can extend the code analyzer with custom checks by adding your own check classes to a `checks` directory at the root of your project.
+
+### How to Create a Custom Check
+
+1. Create a `checks` directory in your project root:
+   ```bash
+   mkdir checks
+   ```
+
+2. Create a Python file (e.g., `checks/my_custom_check.py`) with your custom check class:
+   ```python
+   from tests.test_code_quality_gate import CodeCheck
+   import ast
+
+   class CustomPatternCheck(CodeCheck):
+       code = "CS001"  # Custom code prefix (CS = Custom)
+       
+       def check(self, node, src, cfg):
+           # Example: detect print statements in functions
+           if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "print":
+               if not any("# noqa" in line for line in [src[node.lineno - 1]]):
+                   return [(node.lineno, "Print statement found in production code", self.code)]
+           return ()
+   ```
+
+3. Your custom check will be automatically loaded and run with the other checks.
+
+### Example Usage with pytest
+
+To run the code quality gate with pytest:
+
+```bash
+# Run on all files with custom checks
+pytest -xvs tests/test_code_quality_gate.py::test_bs --code-quality
+
+# Run on specific files or directories
+pytest -xvs tests/test_code_quality_gate.py::test_bs --code-quality --files src/ tests/
+
+# Run only specific checks
+pytest -xvs tests/test_code_quality_gate.py::test_bs --code-quality --checks function_length,assertion_density,CustomPatternCheck
+```
+
+### Command Line Usage with Custom Checks
+
+```bash
+# Run with custom checks included
+python tests/test_code_quality_gate.py --files src/ --output markdown --output-file quality_report.md
+
+# Run only custom checks
+python tests/test_code_quality_gate.py --files src/ --checks CustomPatternCheck
+```
+
+Custom checks integrate seamlessly with the built-in checks and follow the same suppression pattern:
+
+```python
+# Suppress a custom check
+def some_function():
+    print("Debug info")  # noqa: CS001

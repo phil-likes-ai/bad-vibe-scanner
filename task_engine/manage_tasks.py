@@ -1,6 +1,4 @@
 """
-RooCore V2 CLI.
-
 `python -m task_engine.manage_tasks --help`  for usage.
 """
 

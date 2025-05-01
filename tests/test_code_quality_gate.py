@@ -52,6 +52,10 @@ from typing import Any, Dict, List, Sequence, Tuple
 import pytest
 import yaml
 
+# Add parent directory to sys.path to allow importing bs_common
+sys.path.insert(0, str(Path(__file__).parent))
+from bs_common import CodeCheck, suppressed, set_parents
+
 # ── logging ──────────────────────────────────────────────────────────────────
 LOG = logging.getLogger("bs")
 LOG.addHandler(logging.StreamHandler(sys.stdout))
@@ -132,25 +136,6 @@ def node_length(node: ast.AST, src: str) -> int:
     lines = src.splitlines()
     idx = node.lineno - 1
     return len(lines[idx : idx + max(1, len(getattr(node, "body", [])))])
-
-
-# ── suppression check  (# noqa & codes) ──────────────────────────────────────
-def suppressed(line: str, code: str) -> bool:
-    if "# noqa" not in line:
-        return False
-    if line.strip().endswith("# noqa"):
-        return True
-    return f"# noqa: {code}" in line
-
-
-# ── CodeCheck base class  (every rule returns (lineno,msg,code)) ─────────────
-class CodeCheck:
-    code: str  # e.g. BS001
-
-    def check(
-        self, node: ast.AST, src: List[str], cfg: Config
-    ) -> Sequence[Tuple[int, str, str]]:
-        return ()
 
 
 # ── built-in checks ──────────────────────────────────────────────────────────
@@ -443,16 +428,25 @@ def load_external_checks() -> Dict[str, CodeCheck]:
     path = Path("checks")
     if not path.is_dir():
         return {}
+
     checks = {}
     sys.path.insert(0, str(path.parent))
+
     for py in path.glob("*.py"):
-        mod = importlib.import_module(f"checks.{py.stem}")
-        for name, obj in inspect.getmembers(mod, lambda x: isinstance(x, CodeCheck)):
-            checks[name] = obj
+        try:
+            mod = importlib.import_module(f"checks.{py.stem}")
+            for name, obj in inspect.getmembers(
+                mod, lambda x: isinstance(x, CodeCheck)
+            ):
+                checks[name] = obj
+
+            # Call the patch_analyzer function if it exists in the module
+            if hasattr(mod, "patch_analyzer") and callable(mod.patch_analyzer):
+                mod.patch_analyzer()
+        except Exception as e:
+            LOG.error(f"Error loading check module {py.stem}: {e}")
+
     return checks
-
-
-CHECKS: Dict[str, CodeCheck] = {**BUILTIN_CHECKS, **load_external_checks()}
 
 
 # ── Analyzer (per file) ──────────────────────────────────────────────────────
@@ -463,6 +457,9 @@ class Analyzer(ast.NodeVisitor):
         self.funcs = self.asserts = 0
 
     def visit(self, node: ast.AST):
+        # Set parents for AST nodes to enable parent traversal in checks
+        set_parents(node)
+
         active = (
             CHECKS
             if "all" in self.cfg.checks
@@ -477,6 +474,9 @@ class Analyzer(ast.NodeVisitor):
         super().visit(node)
 
     def run(self):
+        # Set current_file attribute on cfg for checks that need it
+        self.cfg.current_file = self.path
+
         self.visit(ast.parse("\n".join(self.src), filename=str(self.path)))
         avg = self.asserts / self.funcs if self.funcs else 0
         return dict(
@@ -490,6 +490,7 @@ class Analyzer(ast.NodeVisitor):
 
 # ── runtime fuzz (same as v1.1 but UUID safe) ────────────────────────────────
 def runtime_fuzz(path: Path) -> List[Tuple[int, str, str]]:
+    # ... existing code ...
     modname = f"target_{path.stem}_{uuid.uuid4().hex}"
     spec = importlib.util.spec_from_file_location(modname, path)
     if not spec or not spec.loader:
@@ -516,6 +517,9 @@ def runtime_fuzz(path: Path) -> List[Tuple[int, str, str]]:
 
 
 # ── external linters (batch) ─────────────────────────────────────────────────
+# ... existing code ...
+
+
 def _run(cmd: List[str], label: str) -> List[str]:
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, check=False)
@@ -677,6 +681,7 @@ def report(res: List[Dict[str, Any]], fmt: str, output_file: str = None):
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
 def cli_parser() -> argparse.ArgumentParser:
+    # ... existing code ...
     p = argparse.ArgumentParser("code-quality gate")
     p.add_argument(
         "--files",
@@ -739,6 +744,7 @@ def main():
 
 # ── pytest integration ───────────────────────────────────────────────────────
 def pytest_addoption(parser: pytest.Parser):
+    # ... existing code ...
     g = parser.getgroup("code-quality")
     g.addoption(
         "--code-quality", action="store_true", help="Enable code quality checks"
@@ -815,6 +821,9 @@ def test_bs(bs_file: Path, bs_check: str, bs_config: Config):
     )
     assert not offenses, "\n".join(f"{ln}: {msg}" for ln, msg, _ in offenses)
 
+
+# Initialize CHECKS after defining all check classes
+CHECKS = {**BUILTIN_CHECKS, **load_external_checks()}
 
 # run standalone
 if __name__ == "__main__":

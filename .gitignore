@@ -12,3 +12,9 @@ file_tree.py
 *.db-wal
 *.db-shm
 *.backup-20250501-092402
+tasks.db.backup-20250501-132316
+tasks.db.backup-20250501-132750
+tasks.db.backup-20250501-133405
+tasks.db.backup-20250501-133711
+tasks.db.backup-20250501-134139
+tasks.db.backup-20250501-135453

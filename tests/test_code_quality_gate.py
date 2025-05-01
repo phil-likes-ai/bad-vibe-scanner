@@ -291,7 +291,7 @@ class ExecEval(CodeCheck):
             and n.func.id in ("exec", "eval")
         ):
             if not suppressed(s[n.lineno - 1], self.code):
-                return ((n.lino, f"{n.func.id}() call", self.code),)
+                return ((n.lineno, f"{n.func.id}() call", self.code),)
         return ()
 
 
@@ -304,8 +304,8 @@ class DeadIf(CodeCheck):
             and isinstance(n.test, ast.Constant)
             and n.test.value in (False, 0, None)
         ):
-            if not suppressed(s[n.lino - 1], self.code):
-                return ((n.lino, "dead if-block", self.code),)
+            if not suppressed(s[n.lineno - 1], self.code):
+                return ((n.lineno, "dead if-block", self.code),)
         return ()
 
 
@@ -319,7 +319,7 @@ class UnusedLocal(CodeCheck):
             for sub in ast.walk(n):
                 if isinstance(sub, ast.Name):
                     if isinstance(sub.ctx, ast.Store) and sub.id not in params:
-                        assigns[sub.id].append(sub.lino)
+                        assigns[sub.id].append(sub.lineno)
                     elif isinstance(sub.ctx, ast.Load):
                         loads.add(sub.id)
             return [
@@ -337,10 +337,10 @@ class MaxArgs(CodeCheck):
 
     def check(self, n, s, c):
         if isinstance(n, ast.FunctionDef) and len(n.args.args) > 5:
-            if not suppressed(s[n.lino - 1], self.code):
+            if not suppressed(s[n.lineno - 1], self.code):
                 return (
                     (
-                        n.lino,
+                        n.lineno,
                         f"{n.name}: too many args ({len(n.args.args)} > 5)",
                         self.code,
                     ),
@@ -354,8 +354,8 @@ class BareExcept(CodeCheck):
     def check(self, n, s, c):
         if isinstance(n, ast.Try):
             for h in n.handlers:
-                if h.type is None and not suppressed(s[n.lino - 1], self.code):
-                    return ((n.lino, "Bare except used", self.code),)
+                if h.type is None and not suppressed(s[n.lineno - 1], self.code):
+                    return ((n.lineno, "Bare except used", self.code),)
         return ()
 
 
@@ -368,8 +368,8 @@ class ForbiddenCalls(CodeCheck):
             and isinstance(n.func, ast.Name)
             and n.func.id in {"print", "eval", "exec"}
         ):
-            if not suppressed(s[n.lino - 1], self.code):
-                return ((n.lino, f"Forbidden call {n.func.id}()", self.code),)
+            if not suppressed(s[n.lineno - 1], self.code):
+                return ((n.lineno, f"Forbidden call {n.func.id}()", self.code),)
         return ()
 
 
@@ -378,11 +378,11 @@ class GlobalNonlocal(CodeCheck):
 
     def check(self, n, s, c):
         if isinstance(n, (ast.Global, ast.Nonlocal)) and not suppressed(
-            s[n.lino - 1], self.code
+            s[n.lineno - 1], self.code
         ):
             return (
                 (
-                    n.lino,
+                    n.lineno,
                     f"{'Global' if isinstance(n, ast.Global) else 'Nonlocal'} discouraged",
                     self.code,
                 ),

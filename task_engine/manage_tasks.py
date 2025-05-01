@@ -9,14 +9,11 @@ from __future__ import annotations
 import argparse
 import contextlib
 import datetime as _dt
-import json
 import sqlite3
 import subprocess
-import sys
 from pathlib import Path
-from typing import Any
-
-from . import mcp_helper, config
+from typing import Generator
+from . import mcp_helper
 
 DB_PATH = Path("tasks.db")
 SCHEMA_SQL = Path(__file__).with_name("task_schema.sql")
@@ -32,7 +29,7 @@ def _ensure_db() -> None:
 
 
 @contextlib.contextmanager
-def _db() -> sqlite3.Connection:  # context helper
+def _db() -> Generator[sqlite3.Connection, None, None]:  # context helper
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -68,7 +65,7 @@ def scan(path: str) -> None:
 
 def import_md(md_file: str) -> None:
     """Import markdown task file."""
-    import bs_task_parser  # user-supplied module
+    import bs_task_parser
 
     df = bs_task_parser.parse_task_file(md_file)
     with _db() as conn:
@@ -91,14 +88,37 @@ def plan(task_id: int) -> None:
 
 def fix(task_id: int) -> None:
     with _db() as conn:
-        res = mcp_helper.merge_files(["dummy.py"])
+        # Get file path from the task data
+        row = conn.execute(
+            "SELECT file_path FROM tasks WHERE id = ?", (task_id,)
+        ).fetchone()
+        if not row or not row["file_path"]:
+            print(f"[ERROR] Task {task_id} has no file_path")
+            return
+
+        res = mcp_helper.merge_files([row["file_path"]])
         _log_event(conn, task_id, "FIX", res)
 
 
 def verify(task_id: int) -> None:
     with _db() as conn:
-        res = mcp_helper.security_scan("dummy-code")
-        _log_event(conn, task_id, "VERIFY", res)
+        # Get the code from the affected file for security scanning
+        row = conn.execute(
+            "SELECT file_path FROM tasks WHERE id = ?", (task_id,)
+        ).fetchone()
+        if not row or not row["file_path"]:
+            print(f"[ERROR] Task {task_id} has no file_path")
+            return
+
+        try:
+            with open(row["file_path"], "r") as f:
+                code = f.read()
+            res = mcp_helper.security_scan(code)
+            _log_event(conn, task_id, "VERIFY", res)
+        except FileNotFoundError:
+            _log_event(
+                conn, task_id, "VERIFY_ERROR", f"File not found: {row['file_path']}"
+            )
 
 
 def complete(task_id: int) -> None:
@@ -124,7 +144,7 @@ def agent_loop(batch: int) -> None:
 # --------------------------------------------------------------------- #
 def cli() -> None:
     _ensure_db()
-    ap = argparse.ArgumentParser(prog="roocore", description="RooCore V2 CLI")
+    ap = argparse.ArgumentParser(prog="bs_scan", description="Bad Vibes Scanner CLI")
     ap.add_argument("--scan")
     ap.add_argument("--import-md")
     ap.add_argument("--plan", type=int)

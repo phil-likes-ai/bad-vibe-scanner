@@ -6,15 +6,15 @@ import pandas as pd
 import sqlite3
 from pathlib import Path
 from tests.test_code_quality_gate import run_quality, report, Config
-from parse_bs_tasks import parse_task_file, export_markdown
+from bs_task_parser import parse_task_file, export_markdown
 from task_engine.manage_tasks import import_md, _ensure_db
 
 
 @pytest.fixture
 def temp_files(tmp_path):
     """Create temporary files for test output."""
-    quality_md = tmp_path / "bs-test-results-full.md"
-    structured_md = tmp_path / "structured_task_list.md"
+    quality_md = tmp_path / "test_results.md"
+    structured_md = tmp_path / "task_list.md"
     db_file = tmp_path / "tasks.db"
     return quality_md, structured_md, db_file
 
@@ -78,6 +78,6 @@ def test_quality_pipeline(temp_files, setup_db):
     with sqlite3.connect(str(setup_db)) as conn:
         tasks = conn.execute("SELECT * FROM tasks").fetchall()
         assert len(tasks) >= 3
-        assert tasks[0]["filename"] == "parse_bs_tasks.py"
+        assert tasks[0]["filename"] == "bs_task_parser.py"
         assert tasks[0]["line"] == 10
         assert "parse_task_file: 0 asserts" in tasks[0]["task"]

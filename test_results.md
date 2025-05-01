@@ -1,7 +1,3 @@
-### src/bad.py
-- Line 1: This is a placeholder issue for demonstration (code: BS001)
-- Line 5: Another placeholder issue for testing (code: BS014)
-
 ### /home/san/adk/src/bad.py
 - Line 2: long_ass_function_a: 0 asserts (min 2) (code: BS002)
 - Line 2: long_ass_function_a: no early param validation (code: BS005)

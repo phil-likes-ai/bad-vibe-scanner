@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Phil Sanderson [philsanderson@pm.me] @PhilLikesAi
+Copyright (c) 2025 X @PhilLikesAi
 Github: https://github.com/phil-likes-ai
 
 

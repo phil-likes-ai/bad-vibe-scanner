@@ -619,12 +619,21 @@ def analyze_file(
     return ana
 
 
+def _analyze_file_wrapper(args):
+    """Wrapper function for multiprocessing to avoid pickling issues with lambda."""
+    file, cfg, ext = args
+    return analyze_file(file, cfg, ext)
+
+
 def run_quality(cfg: Config) -> List[Dict[str, Any]]:
     files = collect(cfg.files)
     ext = external_lint(files, cfg)
 
     with ProcessPoolExecutor() as pool:
-        results = list(pool.map(lambda f: analyze_file(f, cfg, ext), files))
+        # Create a list of tuples with necessary arguments
+        args = [(f, cfg, ext) for f in files]
+        # Use the wrapper function instead of a lambda
+        results = list(pool.map(_analyze_file_wrapper, args))
     return results
 
 
@@ -780,7 +789,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
     active = (
         CHECKS
         if "all" in cfg.checks
-        else {k: CHECKS[k] for k in self.cfg.checks if k in CHECKS}
+        else {k: CHECKS[k] for k in cfg.checks if k in CHECKS}
     )
     metafunc.parametrize("bs_file", files, ids=lambda p: str(p))
     metafunc.parametrize("bs_check", list(active.keys()), ids=str)

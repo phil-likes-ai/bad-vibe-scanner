@@ -1,5 +1,9 @@
+### src/bad.py
+- Line 1: This is a placeholder issue for demonstration (code: BS001)
+- Line 5: Another placeholder issue for testing (code: BS014)
+
 ### /home/san/adk/src/bad.py
-- Line 2: long_ass_function_a: 0 asserts (min 1) (code: BS002)
+- Line 2: long_ass_function_a: 0 asserts (min 2) (code: BS002)
 - Line 2: long_ass_function_a: no early param validation (code: BS005)
 - Line 2: long_ass_function_a: nesting depth 5 (code: BS007)
 - Line 2: long_ass_function_a: too many args (6 > 5) (code: BS012)
@@ -7,7 +11,7 @@
 - Line 3: eval() call (code: BS009)
 - Line 3: Forbidden call eval() (code: BS014)
 - Line 4: Forbidden call print() (code: BS014)
-- Line 11: long_ass_function_b: 0 asserts (min 1) (code: BS002)
+- Line 11: long_ass_function_b: 0 asserts (min 2) (code: BS002)
 - Line 11: long_ass_function_b: no early param validation (code: BS005)
 - Line 11: long_ass_function_b: nesting depth 5 (code: BS007)
 - Line 11: long_ass_function_b: too many args (6 > 5) (code: BS012)
@@ -17,3 +21,5 @@
 - Line 13: Forbidden call print() (code: BS014)
 - Line 2: long_ass_function_a: missing docstring (code: RTN003)
 - Line 11: long_ass_function_b: missing docstring (code: RTN003)
+- Line 1: black: formatting issues in /home/san/adk/src/bad.py (code: EXT004)
+- Line 1: black: formatting issues in /home/san/adk/src/bad.py (code: EXT004)

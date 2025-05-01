@@ -6,6 +6,8 @@ TODO: actual MCP-server deployment.
 
 from __future__ import annotations
 
+# Default API token (replace with proper auth)
+API_TOKEN = "default_token"
 
 MCP_ENDPOINTS: dict[str, str] = {
     "sequential_thinking": "http://localhost:8001/plan",

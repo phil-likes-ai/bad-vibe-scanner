@@ -9,3 +9,6 @@ file_tree.txt
 flatcode.txt
 file_tree.py
 /__pycache__/
+*.db-wal
+*.db-shm
+*.backup-20250501-092402
